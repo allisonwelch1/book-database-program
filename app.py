@@ -216,8 +216,18 @@ def app():
                 print('Book deleted successfully.')
                 time.sleep(2)
         elif choice == '4':
-            # analysis
-            pass
+            oldest_book = session.query(Book).order_by(Book.published_date).first()
+            newest_book = session.query(Book).order_by(Book.published_date.desc()).first()
+            total_books = session.query(Book).count()
+            python_books = session.query(Book).filter(Book.title.like('%Python%')).count()
+            books_after_2015 = session.query(Book).filter(Book.published_date >= datetime.date(2015, 1, 1)).count()
+            print(f'''
+            \n****** BOOK ANALYSIS *****
+            \rOldest Book: {oldest_book.title} by {oldest_book.author}
+            \rNewest Book: {newest_book.title} by {newest_book.author}
+            \rTotal Books: {total_books}
+            \rBooks Published Since 2015: {books_after_2015}
+            \rNumber of Python Books: {python_books} ''')
         else:
             print('GOODBYE')
             app_running = False
