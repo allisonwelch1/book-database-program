@@ -70,14 +70,16 @@ def clean_price(price_str):
 
 def add_csv():
     with open('suggested_books.csv') as csvfile:
-        data = csv.reader(csvfile, delimiter=',')
+        data = csv.reader(csvfile)
         for row in data:
-            title = row[0]
-            author = row[1]
-            date = clean_date(row[2])
-            price = clean_price(row[3])
-            new_book = Book(title=title, author=author, published_date=date, price=price)
-            session.add(new_book)
+            book_in_db = session.query(Book).filter(Book.title==row[0]).one_or_none()
+            if book_in_db == None:
+                title = row[0]
+                author = row[1]
+                date = clean_date(row[2])
+                price = clean_price(row[3])
+                new_book = Book(title=title, author=author, published_date=date, price=price)
+                session.add(new_book)
             # For each row in database it sets title, author, date, price, creates a new book,
             # and adds the new book to the session. Loops through all rows (all books)
         session.commit()  # Then commits all books outside loop
@@ -118,7 +120,9 @@ def app():
             time.sleep(2)  # in "time" module: delays app by 2 seconds so user can see message
         elif choice == '2':
             # view books
-            pass
+            for book in session.query(Book):
+                print(f'{book.id} | {book.title} | {book.author}')
+            input('\nPress enter to return to main menu.')
         elif choice == '3':
             # search book
             pass
@@ -134,6 +138,3 @@ if __name__ == '__main__':
     Base.metadata.create_all(engine)
     add_csv()
     app()
-
-    for book in session.query(Book):
-        print(book)
