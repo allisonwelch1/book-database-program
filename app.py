@@ -13,16 +13,17 @@ def menu():
             \r2) VIEW ALL BOOKS
             \r3) SEARCH FOR BOOK
             \r4) BOOK ANALYSIS
-            \r5) EXIT''')
+            \r5) MARK AS READ
+            \r6) EXIT''')
 
         choice = input('What would you like to do? ')
 
-        if choice in ('1', '2', '3', '4', '5'):
+        if choice in ('1', '2', '3', '4', '5', '6'):
             return choice  # Valid choice, return it and exit the function
         else:
             input('''
             \rPlease choose one of the options above.
-            \rA number from 1-5.
+            \rA number from 1-6.
             \rPress enter to try again
             ''')  # Invalid choice, prompt the user and loop again
 
@@ -36,12 +37,12 @@ def submenu():
 
         choice = input('What would you like to do? ')
 
-        if choice in ('1', '2', '3', '4', '5'):
+        if choice in ('1', '2', '3'):
             return choice  # Valid choice, return it and exit the function
         else:
             input('''
             \rPlease choose one of the options above.
-            \rA number from 1-5.
+            \rA number from 1-3.
             \rPress enter to try again
             ''')  # Invalid choice, prompt the user and loop again
 
@@ -138,7 +139,8 @@ def add_csv():
                 author = row[1]
                 date = clean_date(row[2])
                 price = clean_price(row[3])
-                new_book = Book(title=title, author=author, published_date=date, price=price)
+                read = row[4]
+                new_book = Book(title=title, author=author, published_date=date, price=price, read=read)
                 session.add(new_book)
             # For each row in database it sets title, author, date, price, creates a new book,
             # and adds the new book to the session. Loops through all rows (all books)
@@ -228,6 +230,28 @@ def app():
             \rTotal Books: {total_books}
             \rBooks Published Since 2015: {books_after_2015}
             \rNumber of Python Books: {python_books} ''')
+        elif choice == '5':
+            # view books
+            for book in session.query(Book):
+                print(f'{book.id} | {book.title} | {book.author} | {book.read}')
+            # search book
+            id_options = []
+            for book in session.query(Book):
+                id_options.append(book.id)
+            id_error = True
+            while id_error:
+                id_choice = input(f'''
+                    \nID Options: {id_options}
+                    \rBook id:  ''')
+                id_choice = clean_id(id_choice, id_options)
+                if type(id_choice) == int:
+                    id_error = False
+            the_book = session.query(Book).filter(Book.id == id_choice).first()
+            the_book.read = 'read'
+            session.commit()
+            print('Congrats on another book read!')
+            time.sleep(2)
+
         else:
             print('GOODBYE')
             app_running = False
